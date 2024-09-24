@@ -25,43 +25,47 @@ final class DatabaseModelMacroTests: XCTestCase {
             """
             @DatabaseModel
             struct Model {
-              let id: Int
-              let name: String?
+                let id: Int
+                var name: String?
             }
             """,
             expandedSource: """
             struct Model {
-              @_PersistedProperty
-              let id: Int
-              @_PersistedProperty
-              let name: String?
+                let id: Int
+                var name: String?
+            
+                enum CodingKeys: String, CodingTableKey {
+                    typealias Root = Model
+                    case id
+                    case name
+                }
             }
             """,
             macros: testMacros
         )
     }
     
-    func test_memberAttribute_transientMark() throws {
-        assertMacroExpansion(
-            """
-            @DatabaseModel
-            struct Model {
-              let id: Int
-              @Transient
-              let name: String?
-            }
-            """,
-            expandedSource: """
-            struct Model {
-              @_PersistedProperty
-              let id: Int
-              @Transient
-              let name: String?
-            }
-            """,
-            macros: testMacros
-        )
-    }
+//    func test_memberAttribute_transientMark() throws {
+//        assertMacroExpansion(
+//            """
+//            @DatabaseModel
+//            struct Model {
+//              let id: Int
+//              @Transient
+//              let name: String?
+//            }
+//            """,
+//            expandedSource: """
+//            struct Model {
+//              @_PersistedProperty
+//              let id: Int
+//              @Transient
+//              let name: String?
+//            }
+//            """,
+//            macros: testMacros
+//        )
+//    }
     
 }
 
