@@ -1,0 +1,33 @@
+{
+  "originHash" : "b35713ae268b0cf4e51b0ccd26692d6b313e248dbb153da5cee9467a9f132ae1",
+  "pins" : [
+    {
+      "identity" : "sqlcipher",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/Tencent/sqlcipher",
+      "state" : {
+        "revision" : "12c73015f37571e89206e6acecf36300873db8fa",
+        "version" : "1.4.6"
+      }
+    },
+    {
+      "identity" : "swift-syntax",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/swiftlang/swift-syntax.git",
+      "state" : {
+        "revision" : "cb53fa1bd3219b0b23ded7dfdd3b2baff266fd25",
+        "version" : "600.0.0"
+      }
+    },
+    {
+      "identity" : "wcdb",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/Tencent/wcdb",
+      "state" : {
+        "revision" : "6d48e4c01e8dd4a55a3e136ab50fbd911829959d",
+        "version" : "2.1.8"
+      }
+    }
+  ],
+  "version" : 3
+}

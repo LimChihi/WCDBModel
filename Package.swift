@@ -13,13 +13,10 @@ let package = Package(
             name: "WCDBModel",
             targets: ["WCDBModel"]
         ),
-        .executable(
-            name: "WCDBModelClient",
-            targets: ["WCDBModelClient"]
-        ),
     ],
     dependencies: [
         .package(url: "https://github.com/swiftlang/swift-syntax.git", from: "600.0.0-latest"),
+        .package(url: "https://github.com/Tencent/wcdb", .upToNextMajor(from: "2.1.0"))
     ],
     targets: [
         // Targets are the basic building blocks of a package, defining a module or a test suite.
@@ -37,7 +34,12 @@ let package = Package(
         .target(name: "WCDBModel", dependencies: ["WCDBModelMacros"]),
 
         // A client of the library, which is able to use the macro in its own code.
-        .executableTarget(name: "WCDBModelClient", dependencies: ["WCDBModel"]),
+        .executableTarget(
+            name: "WCDBModelClient",
+            dependencies: [
+            "WCDBModel",
+            .product(name: "WCDBSwift", package: "wcdb"),
+            ]),
 
         // A test target used to develop the macro implementation.
         .testTarget(

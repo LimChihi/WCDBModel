@@ -1,8 +1,26 @@
 import WCDBModel
+import WCDBSwift
 
-let a = 17
-let b = 25
+struct Sample: TableCodable {
+    var id: Int = 0
+    var name: String? = nil
+    
+    enum CodingKeys: String, CodingTableKey {
+        typealias Root = Sample
+        static var objectRelationalMapping: TableBinding<CodingKeys> {
+            TableBinding(CodingKeys.self) {
+                BindColumnConstraint(id, isPrimary: true)
+            }
+        }
+        case id
+        case name
+    }
+}
 
-let (result, code) = #stringify(a + b)
 
-print("The value \(result) was produced by the code \"\(code)\"")
+struct GenSample {
+    
+    var id: Int = 0
+    var name: String? = nil
+    
+}

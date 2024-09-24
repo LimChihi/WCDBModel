@@ -9,7 +9,7 @@ import XCTest
 import WCDBModelMacros
 
 let testMacros: [String: Macro.Type] = [
-    "stringify": StringifyMacro.self,
+    :
 ]
 #endif
 
