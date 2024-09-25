@@ -18,9 +18,12 @@ struct Sample: TableCodable {
 }
 
 
-struct GenSample {
+@DatabaseModel
+struct GenSample: TableCodable {
     
+    @Attribute(.autoIncrement, .primary)
     var id: Int = 0
+    @Transient
     var name: String? = nil
     
 }

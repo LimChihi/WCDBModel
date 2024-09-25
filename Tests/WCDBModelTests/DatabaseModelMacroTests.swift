@@ -23,17 +23,24 @@ final class DatabaseModelMacroTests: XCTestCase {
             """
             @DatabaseModel
             struct Model {
+                @Attribute(.primary, .autoIncrement)
                 let id: Int
                 var name: String?
             }
             """,
             expandedSource: """
             struct Model {
+                @Attribute(.primary)
                 let id: Int
                 var name: String?
             
                 enum CodingKeys: String, CodingTableKey {
                     typealias Root = Model
+                    static var objectRelationalMapping: TableBinding<CodingKeys> {
+                        TableBinding(CodingKeys.self) {
+                            BindColumnConstraint(.id, isPrimary: true)
+                        }
+                    }
                     case id
                     case name
                 }

@@ -10,11 +10,7 @@ import SwiftSyntax
 import SwiftSyntaxBuilder
 import SwiftSyntaxMacros
 
-struct DatabaseModelMacro {
-    
-}
-
-extension DatabaseModelMacro: MemberMacro {
+struct DatabaseModelMacro: MemberMacro {
     
     static func expansion(of node: AttributeSyntax, providingMembersOf declaration: some DeclGroupSyntax, in context: some MacroExpansionContext) throws -> [DeclSyntax] {
         
@@ -32,41 +28,36 @@ extension DatabaseModelMacro: MemberMacro {
                     return attribute ~= .transient
                 }
             }
+
+        let caseDeclaration = variableMember
             .reduce([]) { partialResult, variableDecl in
                 partialResult + variableDecl.bindings
             }
-        
-        let caseDeclaration = variableMember
             .compactMap {
                 $0.pattern.as(IdentifierPatternSyntax.self)?.identifier
             }
         
+        let columnConstraintsGenerator = ColumnConstraintGenerator(columnVariables: variableMember)
+        let codingKeysGenerator = CodingKeysGenerator(
+            root: typeName,
+            caseDeclarations: caseDeclaration,
+            columnConstraints: columnConstraintsGenerator.run()
+        )
+        
         return [
-            try .init(generateCodingKeys(for: caseDeclaration, root: typeName))
+            try .init(codingKeysGenerator.run())
         ]
     }
     
-    private static func generateCodingKeys(for caseDeclarations: [TokenSyntax], root: TokenSyntax) throws -> EnumDeclSyntax {
-        return EnumDeclSyntax(
-            name: .identifier("CodingKeys"),
-            inheritanceClause: InheritanceClauseSyntax {
-                InheritedTypeSyntax(type: TypeSyntax(stringLiteral: "String"))
-                InheritedTypeSyntax(type: TypeSyntax(stringLiteral: "CodingTableKey"))
-            },
-            memberBlock: MemberBlockSyntax(members: MemberBlockItemListSyntax {
-                "typealias Root = \(root)"
-                for caseDeclaration in caseDeclarations {
-                    MemberBlockItemSyntax(
-                        decl: EnumCaseDeclSyntax(
-                            elements: EnumCaseElementListSyntax {
-                                EnumCaseElementSyntax(name: caseDeclaration)
-                            }
-                        )
-                    )
-                }
+}
 
-            })
-        )
+
+extension DatabaseModelMacro: ExtensionMacro {
+
+    static func expansion(of node: AttributeSyntax, attachedTo declaration: some DeclGroupSyntax, providingExtensionsOf type: some TypeSyntaxProtocol, conformingTo protocols: [TypeSyntax], in context: some MacroExpansionContext) throws -> [ExtensionDeclSyntax] {
+        [
+            try ExtensionDeclSyntax("extension \(type.trimmed): TableCodable {}")
+        ]
     }
     
 }
