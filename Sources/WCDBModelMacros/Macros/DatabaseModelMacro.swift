@@ -16,31 +16,28 @@ struct DatabaseModelMacro: MemberMacro {
         
         let typeName = try declaration.getName()
         
-        let variableMember = declaration.memberBlock.members
+        let variableMembers = declaration.memberBlock.members
             .compactMap { member in
-                member.decl.as(VariableDeclSyntax.self)
-            }
-            .filter { variableDecl in
-                !variableDecl.attributes.contains { element in
-                    guard let attribute = element.as(AttributeSyntax.self) else {
-                        return false
-                    }
-                    return attribute ~= .transient
+                member.decl.as(VariableDeclSyntax.self).map {
+                    VariableDeclParser($0)
                 }
             }
+            .filter {
+                !$0.contains(attribute: .transient)
+            }
 
-        let caseDeclaration = variableMember
-            .reduce([]) { partialResult, variableDecl in
-                partialResult + variableDecl.bindings
-            }
-            .compactMap {
-                $0.pattern.as(IdentifierPatternSyntax.self)?.identifier
-            }
+//        let caseDeclaration = variableMember
+//            .reduce([]) { partialResult, variableDecl in
+//                partialResult + variableDecl.bindings
+//            }
+//            .compactMap {
+//                $0.pattern.as(IdentifierPatternSyntax.self)?.identifier
+//            }
         
-        let columnConstraintsGenerator = ColumnConstraintGenerator(columnVariables: variableMember)
+        let columnConstraintsGenerator = ColumnConstraintGenerator(variableMembers: variableMembers)
         let codingKeysGenerator = CodingKeysGenerator(
             root: typeName,
-            caseDeclarations: caseDeclaration,
+            variableMembers: variableMembers,
             columnConstraints: columnConstraintsGenerator.run()
         )
         
@@ -52,12 +49,12 @@ struct DatabaseModelMacro: MemberMacro {
 }
 
 
-extension DatabaseModelMacro: ExtensionMacro {
-
-    static func expansion(of node: AttributeSyntax, attachedTo declaration: some DeclGroupSyntax, providingExtensionsOf type: some TypeSyntaxProtocol, conformingTo protocols: [TypeSyntax], in context: some MacroExpansionContext) throws -> [ExtensionDeclSyntax] {
-        [
-            try ExtensionDeclSyntax("extension \(type.trimmed): TableCodable {}")
-        ]
-    }
-    
-}
+//extension DatabaseModelMacro: ExtensionMacro {
+//
+//    static func expansion(of node: AttributeSyntax, attachedTo declaration: some DeclGroupSyntax, providingExtensionsOf type: some TypeSyntaxProtocol, conformingTo protocols: [TypeSyntax], in context: some MacroExpansionContext) throws -> [ExtensionDeclSyntax] {
+//        [
+//            try ExtensionDeclSyntax("extension \(type.trimmed): TableCodable {}")
+//        ]
+//    }
+//    
+//}

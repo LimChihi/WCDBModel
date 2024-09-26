@@ -12,7 +12,7 @@ struct CodingKeysGenerator {
     
     let root: TokenSyntax
     
-    let caseDeclarations: [TokenSyntax]
+    let variableMembers: [VariableDeclParser]
     
     let columnConstraints: [CodeBlockItemSyntax]
     
@@ -37,11 +37,33 @@ struct CodingKeysGenerator {
         MemberBlockSyntax(members: MemberBlockItemListSyntax {
             "typealias Root = \(root)"
             mappingDeclarations()
-            for caseDeclaration in caseDeclarations {
+            let cases = variableMembers
+                .map { member -> ([TokenSyntax], ExprSyntax?) in
+                    let identifiers = member.context.identifiers
+                    let originalName = member.attributeArguments()?.expression(for: .identifier("originalName"))
+                    return (identifiers, originalName)
+                }
+                .reduce([]) { partialResult, next in
+                    partialResult + next.0.map {
+                        ($0, next.1)
+                    }
+                }
+            
+            for (caseDeclaration, originalNameExpr) in cases {
+                let originalName = originalNameExpr?
+                    .as(StringLiteralExprSyntax.self)?
+                    .segments.first?
+                    .as(StringSegmentSyntax.self)?.content
+                
                 MemberBlockItemSyntax(
                     decl: EnumCaseDeclSyntax(
                         elements: EnumCaseElementListSyntax {
-                            EnumCaseElementSyntax(name: caseDeclaration)
+                            EnumCaseElementSyntax(
+                                name: caseDeclaration,
+                                rawValue: originalName.map {
+                                    InitializerClauseSyntax(value: .literal($0.text))
+                                }
+                            )
                         }
                     )
                 )

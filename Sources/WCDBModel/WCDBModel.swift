@@ -9,4 +9,4 @@ public macro DatabaseModel() = #externalMacro(module: "WCDBModelMacros", type: "
 public macro Transient() = #externalMacro(module: "WCDBModelMacros", type: "TransientMacro")
 
 @attached(peer)
-public macro Attribute(_ options: Attribute.Option...) = #externalMacro(module: "WCDBModelMacros", type: "AttributeMacro")
+public macro Attribute(_ options: Attribute.Option..., originalName: String? = nil) = #externalMacro(module: "WCDBModelMacros", type: "AttributeMacro")

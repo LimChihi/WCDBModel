@@ -18,12 +18,72 @@ private let testMacros: [String: Macro.Type] = [
 
 final class DatabaseModelMacroTests: XCTestCase {
     
-    func test_memberAttribute() throws {
+    func test_emptyAttribute() throws {
         assertMacroExpansion(
             """
             @DatabaseModel
             struct Model {
-                @Attribute(.primary, .autoIncrement)
+                let id: Int
+                var name: String?
+            }
+            """,
+            expandedSource: """
+            struct Model {
+                let id: Int
+                var name: String?
+            
+                enum CodingKeys: String, CodingTableKey {
+                    typealias Root = Model
+                    static var objectRelationalMapping: TableBinding<CodingKeys> {
+                        TableBinding(CodingKeys.self) {
+                        }
+                    }
+                    case id
+                    case name
+                }
+            }
+            """,
+            macros: testMacros
+        )
+    }
+    
+    func test_transientMark() throws {
+        assertMacroExpansion(
+            """
+            @DatabaseModel
+            struct Model {
+                let id: Int
+                @Transient
+                var name: String?
+            }
+            """,
+            expandedSource: """
+            struct Model {
+                let id: Int
+                @Transient
+                var name: String?
+            
+                enum CodingKeys: String, CodingTableKey {
+                    typealias Root = Model
+                    static var objectRelationalMapping: TableBinding<CodingKeys> {
+                        TableBinding(CodingKeys.self) {
+                        }
+                    }
+                    case id
+                }
+            }
+            """,
+            macros: testMacros
+        )
+    }
+    
+    
+    func test_attribute_primary() throws {
+        assertMacroExpansion(
+            """
+            @DatabaseModel
+            struct Model {
+                @Attribute(.primary)
                 let id: Int
                 var name: String?
             }
@@ -50,25 +110,95 @@ final class DatabaseModelMacroTests: XCTestCase {
         )
     }
     
-    func test_memberAttribute_transientMark() throws {
+    func test_attribute_primaryAutoIncrement() {
         assertMacroExpansion(
             """
             @DatabaseModel
             struct Model {
+                @Attribute(.primary(.autoIncrement))
                 let id: Int
-                @Transient
                 var name: String?
             }
             """,
             expandedSource: """
             struct Model {
+                @Attribute(.primary(.autoIncrement))
                 let id: Int
-                @Transient
                 var name: String?
             
                 enum CodingKeys: String, CodingTableKey {
                     typealias Root = Model
+                    static var objectRelationalMapping: TableBinding<CodingKeys> {
+                        TableBinding(CodingKeys.self) {
+                            BindColumnConstraint(.id, isPrimary: true, isAutoIncrement: true)
+                        }
+                    }
                     case id
+                    case name
+                }
+            }
+            """,
+            macros: testMacros
+        )
+    }
+    
+    func test_attribute_unique() {
+        assertMacroExpansion(
+            """
+            @DatabaseModel
+            struct Model {
+                @Attribute(.unique)
+                let id: Int
+                var name: String?
+            }
+            """,
+            expandedSource: """
+            struct Model {
+                @Attribute(.unique)
+                let id: Int
+                var name: String?
+            
+                enum CodingKeys: String, CodingTableKey {
+                    typealias Root = Model
+                    static var objectRelationalMapping: TableBinding<CodingKeys> {
+                        TableBinding(CodingKeys.self) {
+                            BindColumnConstraint(.id, isUnique: true)
+                        }
+                    }
+                    case id
+                    case name
+                }
+            }
+            """,
+            macros: testMacros
+        )
+    }
+    
+    
+    func test_attribute_originalName() {
+        assertMacroExpansion(
+            """
+            @DatabaseModel
+            struct Model {
+                @Attribute(originalName: "identifier")
+                let id: Int
+                var name: String?
+            }
+            """,
+            expandedSource: """
+            struct Model {
+                @Attribute(originalName: "identifier")
+                let id: Int
+                var name: String?
+            
+                enum CodingKeys: String, CodingTableKey {
+                    typealias Root = Model
+                    static var objectRelationalMapping: TableBinding<CodingKeys> {
+                        TableBinding(CodingKeys.self) {
+                        }
+                    }
+                    case id = "identifier"
+                    case name
                 }
             }
             """,

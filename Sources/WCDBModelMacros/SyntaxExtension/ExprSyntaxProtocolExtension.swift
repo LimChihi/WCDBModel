@@ -14,3 +14,20 @@ extension ExprSyntaxProtocol where Self == DeclReferenceExprSyntax {
     }
     
 }
+
+
+extension ExprSyntaxProtocol where Self == BooleanLiteralExprSyntax {
+    
+    static func literal(_ value: Bool) -> BooleanLiteralExprSyntax {
+        BooleanLiteralExprSyntax(value)
+    }
+    
+}
+
+extension ExprSyntaxProtocol where Self == StringLiteralExprSyntax {
+    
+    static func literal(_ value: String) -> StringLiteralExprSyntax {
+        StringLiteralExprSyntax(content: value)
+    }
+    
+}

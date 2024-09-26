@@ -9,19 +9,19 @@ struct Sample: TableCodable {
         typealias Root = Sample
         static var objectRelationalMapping: TableBinding<CodingKeys> {
             TableBinding(CodingKeys.self) {
-                BindColumnConstraint(id, isPrimary: true)
+                BindColumnConstraint(id, isPrimary: true, isAutoIncrement: true)
             }
         }
-        case id
+        case id = "identifier"
         case name
     }
+    
 }
-
 
 @DatabaseModel
 struct GenSample: TableCodable {
     
-    @Attribute(.autoIncrement, .primary)
+    @Attribute(.primary(.autoIncrement), .unique, originalName: "identifier")
     var id: Int = 0
     @Transient
     var name: String? = nil
