@@ -1,5 +1,5 @@
 import WCDBModel
-import WCDBSwift
+@preconcurrency import WCDBSwift
 
 struct Sample: TableCodable {
     var id: Int = 0
@@ -7,11 +7,11 @@ struct Sample: TableCodable {
     
     enum CodingKeys: String, CodingTableKey {
         typealias Root = Sample
-        static var objectRelationalMapping: TableBinding<CodingKeys> {
+        static let objectRelationalMapping: TableBinding<CodingKeys> = {
             TableBinding(CodingKeys.self) {
                 BindColumnConstraint(id, isPrimary: true, isAutoIncrement: true)
             }
-        }
+        }()
         case id = "identifier"
         case name
     }

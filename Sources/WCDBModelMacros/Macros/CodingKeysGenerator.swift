@@ -82,6 +82,7 @@ struct CodingKeysGenerator {
         })
     }
     
+    /*
     private func mappingDeclarations() -> VariableDeclSyntax {
         VariableDeclSyntax(
             modifiers: DeclModifierListSyntax {
@@ -103,33 +104,81 @@ struct CodingKeysGenerator {
                 )
             }
     }
+     */
     
+    private func mappingDeclarations() -> VariableDeclSyntax {
+        VariableDeclSyntax(
+            modifiers: DeclModifierListSyntax {
+                if isPublic {
+                    DeclModifierSyntax(name: .publicToken)
+                }
+                DeclModifierSyntax(name: .keyword(.static))
+            },
+            bindingSpecifier: .keyword(.let)) {
+                PatternBindingSyntax(
+                    pattern: PatternSyntax(IdentifierPatternSyntax(identifier: .identifier("objectRelationalMapping"))),
+                    typeAnnotation: TypeAnnotationSyntax(
+                        colon: .colonToken(),
+                        type: IdentifierTypeSyntax(name: .identifier("TableBinding"), genericArgumentClause: GenericArgumentClauseSyntax(arguments: GenericArgumentListSyntax {
+                            GenericArgumentSyntax(argument: IdentifierTypeSyntax(name: .codingKeys))
+                        }))
+                    ),
+                    initializer: InitializerClauseSyntax(
+                        equal: .equalToken(),
+                        value: FunctionCallExprSyntax(
+                            callee: ClosureExprSyntax(statements: tableBindingInitFunctionSyntax())
+                        )
+                    )
+                )
+            }
+    }
+    
+    
+    func test() -> VariableDeclSyntax {
+        try! VariableDeclSyntax(
+        """
+        static let objectRelationalMapping: TableBinding<CodingKeys> = {
+            TableBinding(CodingKeys.self) {
+                BindColumnConstraint(id, isPrimary: true, isAutoIncrement: true)
+            }
+        }()
+        """
+        )
+    }
+    
+    /*
     private func tableBindingInit() -> AccessorBlockSyntax {
         AccessorBlockSyntax(
             accessors: AccessorBlockSyntax.Accessors.getter(
-                CodeBlockItemListSyntax {
-                    FunctionCallExprSyntax(
-                        callee: DeclReferenceExprSyntax(baseName: .identifier("TableBinding")),
-                        trailingClosure: ClosureExprSyntax(statements: CodeBlockItemListSyntax {
-                            for item in columnConstraints {
-                                item
-                            }
-                        }),
-                        argumentList: {
-                            LabeledExprListSyntax {
-                                LabeledExprSyntax(
-                                    expression: MemberAccessExprSyntax(
-                                        base: DeclReferenceExprSyntax(baseName: .codingKeys),
-                                        period: .periodToken(),
-                                        declName: DeclReferenceExprSyntax(baseName: .keyword(.self))
-                                    )
-                                )
-                            }
-                        }
-                    )
-                }
+                tableBindingInitFunctionSyntax()
             )
         )
+    }
+     */
+    
+    private func tableBindingInitFunctionSyntax() -> CodeBlockItemListSyntax {
+        CodeBlockItemListSyntax {
+            FunctionCallExprSyntax(
+                callee: DeclReferenceExprSyntax(baseName: .identifier("TableBinding")),
+                trailingClosure: ClosureExprSyntax(statements: CodeBlockItemListSyntax {
+                    for item in columnConstraints {
+                        item
+                    }
+                }),
+                argumentList: {
+                    LabeledExprListSyntax {
+                        LabeledExprSyntax(
+                            expression: MemberAccessExprSyntax(
+                                base: DeclReferenceExprSyntax(baseName: .codingKeys),
+                                period: .periodToken(),
+                                declName: DeclReferenceExprSyntax(baseName: .keyword(.self))
+                            )
+                        )
+                    }
+                }
+            )
+        }
+        
     }
     
 }
