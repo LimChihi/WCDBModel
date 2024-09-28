@@ -19,7 +19,7 @@ struct Sample: TableCodable {
 }
 
 @DatabaseModel
-struct GenSample: TableCodable {
+public struct GenSample: TableCodable {
     
     @Attribute(.primary(.autoIncrement), .unique, originalName: "identifier")
     var id: Int = 0

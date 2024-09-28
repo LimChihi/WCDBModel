@@ -10,6 +10,8 @@ import SwiftSyntaxBuilder
 
 struct CodingKeysGenerator {
     
+    let isPublic: Bool
+    
     let root: TokenSyntax
     
     let variableMembers: [VariableDeclParser]
@@ -18,6 +20,11 @@ struct CodingKeysGenerator {
     
     func run() throws -> EnumDeclSyntax {
         EnumDeclSyntax(
+            modifiers: DeclModifierListSyntax {
+                if isPublic {
+                    DeclModifierSyntax(name: .publicToken)
+                }
+            },
             name: .codingKeys,
             inheritanceClause: inheritanceClauseSyntax(),
             memberBlock: memberBlockSynax()
@@ -32,10 +39,14 @@ struct CodingKeysGenerator {
             InheritedTypeSyntax(type: TypeSyntax(stringLiteral: "CodingTableKey"))
         }
     }
-    
+        
     private func memberBlockSynax() -> MemberBlockSyntax {
         MemberBlockSyntax(members: MemberBlockItemListSyntax {
-            "typealias Root = \(root)"
+            if isPublic {
+                "public typealias Root = \(root)"
+            } else {
+                "typealias Root = \(root)"
+            }
             mappingDeclarations()
             let cases = variableMembers
                 .map { member -> ([TokenSyntax], ExprSyntax?) in
@@ -74,6 +85,9 @@ struct CodingKeysGenerator {
     private func mappingDeclarations() -> VariableDeclSyntax {
         VariableDeclSyntax(
             modifiers: DeclModifierListSyntax {
+                if isPublic {
+                    DeclModifierSyntax(name: .publicToken)
+                }
                 DeclModifierSyntax(name: .keyword(.static))
             },
             bindingSpecifier: .keyword(.var)) {

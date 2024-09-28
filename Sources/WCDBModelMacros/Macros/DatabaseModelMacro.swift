@@ -15,6 +15,9 @@ struct DatabaseModelMacro: MemberMacro {
     static func expansion(of node: AttributeSyntax, providingMembersOf declaration: some DeclGroupSyntax, in context: some MacroExpansionContext) throws -> [DeclSyntax] {
         
         let typeName = try declaration.getName()
+        let isPublic = declaration.modifiers.contains {
+            $0.name ~= .publicToken
+        }
         
         let variableMembers = declaration.memberBlock.members
             .compactMap { member in
@@ -25,17 +28,10 @@ struct DatabaseModelMacro: MemberMacro {
             .filter {
                 !$0.contains(attribute: .transient)
             }
-
-//        let caseDeclaration = variableMember
-//            .reduce([]) { partialResult, variableDecl in
-//                partialResult + variableDecl.bindings
-//            }
-//            .compactMap {
-//                $0.pattern.as(IdentifierPatternSyntax.self)?.identifier
-//            }
         
         let columnConstraintsGenerator = ColumnConstraintGenerator(variableMembers: variableMembers)
         let codingKeysGenerator = CodingKeysGenerator(
+            isPublic: isPublic,
             root: typeName,
             variableMembers: variableMembers,
             columnConstraints: columnConstraintsGenerator.run()
@@ -58,3 +54,11 @@ struct DatabaseModelMacro: MemberMacro {
 //    }
 //    
 //}
+
+extension TokenSyntax {
+    
+    static var publicToken: Self {
+        .keyword(.public)
+    }
+    
+}

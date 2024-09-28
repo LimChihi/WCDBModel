@@ -206,6 +206,35 @@ final class DatabaseModelMacroTests: XCTestCase {
         )
     }
     
+    func test_public() throws {
+        assertMacroExpansion(
+            """
+            @DatabaseModel
+            public struct Model {
+                let id: Int
+                var name: String?
+            }
+            """,
+            expandedSource: """
+            public struct Model {
+                let id: Int
+                var name: String?
+            
+                public enum CodingKeys: String, CodingTableKey {
+                    public typealias Root = Model
+                    public static var objectRelationalMapping: TableBinding<CodingKeys> {
+                        TableBinding(CodingKeys.self) {
+                        }
+                    }
+                    case id
+                    case name
+                }
+            }
+            """,
+            macros: testMacros
+        )
+    }
+    
 }
 
 #endif
